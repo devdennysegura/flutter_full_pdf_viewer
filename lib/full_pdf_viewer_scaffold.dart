@@ -38,6 +38,37 @@ class _PDFViewScaffoldState extends State<PDFViewerScaffold> {
     pdfViwerRef.dispose();
   }
 
+  void removeProfile(context) async {
+    pdfViwerRef.resize(Rect.zero);
+    bool confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Titulo'),
+          content: Text('Contenido'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+            ),
+            FlatButton(
+              child: Text('Confirmar'),
+              onPressed: () async {
+                Navigator.pop(context, true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    // pdfViwerRef.resize(_buildRect(context));
+    if (confirm != null && confirm) {
+      print('firmando...');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_rect == null) {
@@ -57,18 +88,42 @@ class _PDFViewScaffoldState extends State<PDFViewerScaffold> {
       }
     }
     return new Scaffold(
-        appBar: widget.appBar,
+        appBar: AppBar(
+          title: Text("Document"),
+          actions: <Widget>[
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () => removeProfile(context),
+            ),
+          ],
+        ),
+        bottomNavigationBar: BottomAppBar(
+          elevation: 0.0,
+          color: Colors.white,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              IconButton(
+                icon: Icon(Icons.menu),
+                onPressed: () => print('hellow'),
+              )
+            ],
+          ),
+        ),
+        backgroundColor: Colors.white,
         body: const Center(child: const CircularProgressIndicator()));
   }
 
   Rect _buildRect(BuildContext context) {
-    final fullscreen = widget.appBar == null;
+    final fullscreen = false;
 
     final mediaQuery = MediaQuery.of(context);
     final topPadding = widget.primary ? mediaQuery.padding.top : 0.0;
-    final top =
-    fullscreen ? 0.0 : widget.appBar.preferredSize.height + topPadding;
-    var height = mediaQuery.size.height - top;
+    final top = fullscreen ? 0.0 : 56.0 + topPadding;
+    final bottomPadding = widget.primary ? mediaQuery.padding.bottom : 0.0;
+    final bottom = fullscreen ? 0.0 : 56.0 + bottomPadding;
+    var height = mediaQuery.size.height - (top + bottom);
     if (height < 0.0) {
       height = 0.0;
     }

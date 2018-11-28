@@ -38,6 +38,11 @@ class PDFViewerPlugin {
     await _channel.invokeMethod('launch', args);
   }
 
+  Future<Null> showPreview(String path) async {
+    final args = <String, dynamic>{'path': path};
+    await _channel.invokeMethod('preview', args);
+  }
+
   /// Close the PDFViewer
   /// Will trigger the [onDestroy] event
   Future close() => _channel.invokeMethod('close');

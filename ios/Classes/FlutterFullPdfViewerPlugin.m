@@ -3,11 +3,12 @@
 #import "FlutterFullPdfViewerPlugin.h"
 
 @interface FlutterFullPdfViewerPlugin ()
+@property (strong, nonatomic) UIDocumentInteractionController *documentInteractionController;
 @end
 
 @implementation FlutterFullPdfViewerPlugin{
     FlutterResult _result;
-    UIViewController *_viewController;
+    UIViewController <UIDocumentInteractionControllerDelegate> *_viewController;
     UIWebView *_webView;
 }
 
@@ -21,6 +22,10 @@
     FlutterFullPdfViewerPlugin *instance = [[FlutterFullPdfViewerPlugin alloc] initWithViewController:viewController];
     
     [registrar addMethodCallDelegate:instance channel:channel];
+}
+
+- (UIViewController *) documentInteractionControllerViewControllerForPreview: (UIDocumentInteractionController *) controller {
+    return _viewController;
 }
 
 - (instancetype)initWithViewController:(UIViewController *)viewController {
@@ -48,22 +53,27 @@
     
     
     if ([@"launch" isEqualToString:call.method]) {
-        
         NSDictionary *rect = call.arguments[@"rect"];
         NSString *path = call.arguments[@"path"];
-        
         CGRect rc = [self parseRect:rect];
-        
         if (_webView == nil){
             _webView = [[UIWebView alloc] initWithFrame:rc];
-            _webView.scalesPageToFit = true;
-            
             NSURL *targetURL = [NSURL fileURLWithPath:path];
             NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
             [_webView loadRequest:request];
-            
+            _webView.scalesPageToFit = YES;
+            _webView.backgroundColor = [UIColor whiteColor];
+            [_webView setOpaque:NO];
             [_viewController.view addSubview:_webView];
         }
+        
+    }else if ([@"preview" isEqualToString:call.method]) {
+        NSString *path = call.arguments[@"path"];
+        NSURL *targetURL = [NSURL fileURLWithPath:path];
+        NSURLRequest *request = [NSURLRequest requestWithURL:targetURL];
+        self.documentInteractionController = [UIDocumentInteractionController interactionControllerWithURL:targetURL];
+        [self.documentInteractionController setDelegate:self];
+        [self.documentInteractionController presentPreviewAnimated:YES];
         
     } else if ([@"resize" isEqualToString:call.method]) {
         if (_webView != nil) {
